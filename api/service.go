@@ -3,13 +3,14 @@ package api
 import (
 	"errors"
 
+	"github.com/spf13/viper"
 	"github.com/twilio/twilio-go"
 	twilioApi "github.com/twilio/twilio-go/rest/verify/v2"
 )
 
 var client *twilio.RestClient = twilio.NewRestClientWithParams(twilio.ClientParams{
-	Username: envACCOUNTSID(),
-	Password: envAUTHTOKEN(),
+	Username: viper.GetString("TWILIO_ACCOUNT_SID"),
+	Password: viper.GetString("TWILIO_AUTHTOKEN"),
 })
 
 func (app *Config) twilioSendOTP(phoneNumber string) (string, error) {
@@ -17,7 +18,8 @@ func (app *Config) twilioSendOTP(phoneNumber string) (string, error) {
 		To: &phoneNumber,
 	}
 	params.SetChannel("sms")
-	resp, err := client.VerifyV2.CreateVerification(envSERVICESID(), params)
+
+	resp, err := client.VerifyV2.CreateVerification(viper.GetString("TWILIO_SERVICE_SID"), params)
 	if err != nil {
 		return "", err
 	}
@@ -31,7 +33,7 @@ func (app *Config) twilioVerifyOTP(phoneNumber, code string) error {
 		Code: &code,
 	}
 
-	resp, err := client.VerifyV2.CreateVerificationCheck(envSERVICESID(), params)
+	resp, err := client.VerifyV2.CreateVerificationCheck(viper.GetString("TWILIO_SERVICE_SID"), params)
 	if err != nil {
 		return err
 	}
